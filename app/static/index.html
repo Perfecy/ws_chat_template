@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат с WebSocket и mTLS</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        input { padding: 10px; width: 70%; }
+        button { padding: 10px; }
+        #output { margin-top: 20px; border: 1px solid #ddd; padding: 10px; width: 80%; height: 200px; overflow-y: auto; }
+        .msg { margin-bottom: 10px; }
+        .sent { color: blue; }
+        .received { color: green; }
+    </style>
+</head>
+<body>
+<h3>Чат с mTLS (2 сообщения будут перевёрнуты):</h3>
+
+<input id="messageInput" autocomplete="off" placeholder="Введите сообщение"/>
+<button onclick="sendMessage()">Отправить</button>
+
+<div id="output"></div>
+
+<script>
+    const ws = new WebSocket("wss://localhost:8000/ws");
+    const output = document.getElementById('output');
+
+    ws.onopen = () => {
+        addMessage("✅ Подключение установлено.", "received");
+    };
+
+    ws.onmessage = (event) => {
+        addMessage(event.data, "received");
+    };
+
+    ws.onclose = () => {
+        addMessage("❌ Подключение закрыто.", "received");
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        if (input.value.trim() !== "") {
+            ws.send(input.value);
+            addMessage(input.value, "sent");
+            input.value = '';
+        }
+    }
+
+    function addMessage(msg, type) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "msg " + type;
+        msgDiv.textContent = msg;
+        output.appendChild(msgDiv);
+        output.scrollTop = output.scrollHeight;
+    }
+
+    document.getElementById('messageInput').addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
