@@ -1,12 +1,13 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
+import uvicorn
 
 app = FastAPI()
 
 connections = {}
 
 # Статика монтируется явно на '/static', а не на '/'
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static/", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
@@ -30,3 +31,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         connections.pop(client_id, None)
+
+uvicorn.run(
+    app,
+    ssl_keyfile='PATH_TO_SERVER_KEYFILE',
+    ssl_certfile='PATH_TO_SERVER_CRTFILE',
+    ssl_ca_certs='PATH_TO_CA_CRT',
+    ssl_cert_reqs=2
+)
